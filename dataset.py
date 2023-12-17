@@ -7,6 +7,7 @@ from utils import register_plugin, get_plugin
 from PIL import Image, ImageOps
 import numpy as np
 from torchvision import transforms
+import os
 
 
 @register_plugin('transform', 'betaaug2D')
@@ -59,11 +60,11 @@ class Cem500K(torch.utils.data.dataset.Dataset):
     """
 
     def __init__(self, cfg):
-        base_directory = '/home/codee/scratch/dataset/small_set'
+        base_directory = '/home/codee/scratch/dataset/cem500k'
 
         # Forming the list with file paths
         # change the number for samples
-        file_paths = [f"{base_directory}/tensor{i}.tiff" for i in range(0, 100)]
+        file_paths = [f"{base_directory}/{filename}" for filename in os.listdir(base_directory)]
         self.path_list = file_paths
         #print(cfg["path_list"])
         # need to be modified if we would like readin all the images in the directory
@@ -123,7 +124,7 @@ class Cem500K(torch.utils.data.dataset.Dataset):
         !!!! here is so important
         Returns the number of samples in each epoch.
         """
-        return 300
+        return 500000
 
     def __getitem__(self, idx):
         """
