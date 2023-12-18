@@ -1,0 +1,6 @@
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) libfabric/1.10.1     2) openmpi/4.0.3     3) ucx/1.8.0
+
+log_dir : /home/codee/scratch/mycode//home/codee/scratch/servercheckpoint
+0 Launching python script

@@ -109,9 +109,9 @@ for epoch in range(cfg["ENGINE"]["epoch"]):
     epoch_loss = engine_func(model, dataloader, optimizer, cfg)
     print("loss:", epoch_loss) # the average loss across each batch
     print("step:", epoch)
-    if rank == 0 and (epoch + 1) % 50 == 0:
+    if (epoch + 1) % 20 == 0:
         # this is for GPUs
         state_dict = model.module.state_dict()
         #state_dict = model.state_dict()
-        save_checkpoint(args.logdir, state_dict, name="FOVeighty.pt")
+        save_checkpoint(args.logdir, state_dict, name="pretrain500k12_18.pt")
 print(f"From Rank: {rank}, ==> Training finished!")

@@ -20,19 +20,19 @@ DATASET:
     #- "../dataset/high_c2_source_tensor"
     #- "../dataset/high_c3_source_tensor"
     - "/home/codee/scratch/dataset/small_set/tensor1.tiff"
-    - "/home/codee/scratch/dataset/small_set/tensor2.tiff"
-    - "/home/codee/scratch/dataset/small_set/tensor3.tiff"
+    #- "/home/codee/scratch/dataset/small_set/tensor2.tiff"
+    #- "/home/codee/scratch/dataset/small_set/tensor3.tiff"
   pad: 4 #ex. from [2, 2, 2] image to [18,18,18] image
   aug: "betaaug2D"
   # depend on number of GPUs
-  num_workers: 1
-  batch_size: 32 #32
+  num_workers: 4
+  batch_size: 128 #32
   vol_size: 80
   patch_size: 5 # 240 / 24 = 10 # 240 / 8 = 30
 ENGINE:
   name: "train_engine"
-  epoch: 2800 #2800
+  epoch: 1000 #2800
 OPTIM:
   name: "adamw"
-  lr: 1.5e-4 
+  lr: 1.5e-3
   reg_w: 1.0e-5

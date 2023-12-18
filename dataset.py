@@ -65,7 +65,8 @@ class Cem500K(torch.utils.data.dataset.Dataset):
         # Forming the list with file paths
         # change the number for samples
         file_paths = [f"{base_directory}/{filename}" for filename in os.listdir(base_directory)]
-        self.path_list = file_paths
+        print("filenum:", len(file_paths))
+        self.path_list = file_paths[0:100]
         #print(cfg["path_list"])
         # need to be modified if we would like readin all the images in the directory
         self.pad = cfg["pad"] 
@@ -91,18 +92,27 @@ class Cem500K(torch.utils.data.dataset.Dataset):
         for x in self.path_list:
             # Load the image using PIL
             image = Image.open(x)
-            #print("readin size:", image.size)
-            '''
-            # Check if the image dimensions are 224x224
-            if image.size != (224, 224):
+            
+            
+            # Check if the image dimensions are within the size of patch
+            if image.size[0] < cfg["vol_size"] + 2:
                 # Calculate padding
-                delta_width = 224 - image.size[0]
+                delta_width = cfg["vol_size"] - image.size[0] + 2
                 delta_height = 224 - image.size[1]
-                padding = (delta_width // 2, delta_height // 2, delta_width - (delta_width // 2), delta_height - (delta_height // 2))
+                padding = (delta_width // 2, 0, delta_width - (delta_width // 2), 0)
         
                 # Apply padding
                 image = ImageOps.expand(image, padding)  
-            '''
+                
+            if image.size[1] < cfg["vol_size"] + 2:
+                # Calculate padding
+                delta_height = cfg["vol_size"] - image.size[1] + 2
+                padding = (0, delta_height // 2, 0, delta_height - (delta_height // 2))
+        
+                # Apply padding
+                image = ImageOps.expand(image, padding) 
+            
+            #print("readimage size:", image.size)
             # Check if the image was successfully loaded
             if image is not None:
                 # Convert the image to a PyTorch tensor
