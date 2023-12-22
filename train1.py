@@ -55,7 +55,7 @@ dist.init_process_group(
 print(f"From Rank: {rank}, ==> Process group ready!", flush=True)
 print(f"From Rank: {rank}, ==> Building model..")
 model = get_plugin("model", cfg["MODEL"]["name"])(cfg["MODEL"])
-model.load_state_dict(torch.load('/home/codee/scratch/servercheckpoint/FOVeighty.pt'))
+#model.load_state_dict(torch.load('/home/codee/scratch/servercheckpoint/FOVeighty.pt'))
 #this is fir the GPU is possible
 if torch.cuda.is_available():
     model = model.cuda()
@@ -66,6 +66,17 @@ print(f"From Rank: {rank}, ==> Model ready!", flush=True)
 print(f"From Rank: {rank}, ==> Preparing data..")
 
 dataset = get_plugin("dataset", cfg["DATASET"]["name"])(cfg["DATASET"])
+
+for i, sample in enumerate(dataset):
+    # Assuming sample is a tuple of (image, label)
+    image = sample
+
+    # Print the shape of the image tensor
+    print(f"Sample {i}: Shape - {image.shape}")
+
+    # Check only the first few samples
+    if i >= 5:  # Check first 5 samples
+        break
 
 
 # determinstic behaviour

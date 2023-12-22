@@ -33,13 +33,13 @@ class MAESTER_MODEL(nn.Module):
 
     def __init__(
         self,
-        img_size=224,
+        img_size=96,
         patch_size=16,
         in_chans=1,
-        embed_dim=1024,
-        depth=24,
+        embed_dim=768,
+        depth=12,
         num_heads=16,
-        decoder_embed_dim=512,
+        decoder_embed_dim=768,
         decoder_depth=8,
         decoder_num_heads=16,
         mlp_ratio=4.0,
@@ -216,7 +216,7 @@ class MAESTER_MODEL(nn.Module):
 
     def forward_encoder(self, x, mask_ratio):
         # embed patches
-        #print("before:,", x.shape)
+        print("before:,", x.shape)
         x_detached = x.detach()  # Detach the tensor from the computation graph
         x_cpu = x_detached.cpu()  # Move the tensor to CPU
         x_numpy = x_cpu.numpy()   # Convert the tensor to a Numpy array
@@ -339,7 +339,7 @@ class MAESTER_MODEL(nn.Module):
         x_numpy = x_cpu.numpy()
         # Plotting
         plt.imshow(x_numpy[0][0], cmap='gray')
-        plt.savefig('/home/codee/scratch/result/pred12.15.png')
+        plt.savefig('/home/codee/scratch/result/pred12.20.png')
         plt.close()
         
         loss = self.forward_loss(imgs, pred, mask)

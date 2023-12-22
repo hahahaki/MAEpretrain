@@ -36,7 +36,7 @@ def train_one_epoch(
 
     model.train()
     for batch_data in data_loader:
-        optimizer.zero_grad()
+        optimizer.zero_grad()###if we don't, the new gradients will be added to the old ones
         batch_data = batch_data.cuda()
         batch_loss, pred, _ = model(batch_data, mask_ratio=cfg["MODEL"]["mask_ratio"])
         #print("loss:", batch_loss) 

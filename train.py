@@ -11,8 +11,6 @@ from pretrain_engine import set_deterministic
 from utils import get_plugin, read_yaml, save_checkpoint
 from dataset import * # I added this, so @register in dataset.py can be added
 
- 
-print("Current working directory:", os.getcwd())
 
 parser = argparse.ArgumentParser(description="MAESTER Training")
 parser.add_argument("--model_config_dir", default="/home/codee/scratch/mycode", type=str)
@@ -74,9 +72,39 @@ model.embed_dim = cfg["MODEL"]["embed_dim"]
 print(f"From Rank: {rank}, ==> Model ready!", flush=True)
 print(f"From Rank: {rank}, ==> Preparing data..")
 
-dataset = get_plugin("dataset", cfg["DATASET"]["name"])(cfg["DATASET"])
-print("Total images in dataset:", len(dataset))
 
+'''
+normalize = tf.Normalize(mean = 0.57287007, std = 0.12740536)
+augmentation = tf.Compose([
+    tf.Grayscale(3),
+    tf.RandomApply([tf.RandomRotation(180)], p=0.5),
+    tf.RandomResizedCrop(96, scale=(0.2, 1.)),
+    tf.ColorJitter(0.4, 0.4, 0.4, 0.1),
+    tf.RandomApply([GaussianBlur([.1, 2.])], p=0.5),
+    tf.Grayscale(1),
+    tf.RandomHorizontalFlip(),
+    tf.RandomVerticalFlip(),
+    tf.ToTensor(),
+    GaussNoise(p=0.5),
+    normalize
+])
+'''
+dataset = get_plugin("dataset", cfg["DATASET"]["name"])(cfg["DATASET"])
+#path = '/home/codee/scratch/dataset/small_set'
+#dataset = EMData(path, augmentation)
+print("Total images in dataset:", len(dataset))
+'''
+for i, sample in enumerate(dataset):
+    # Assuming sample is a tuple of (image, label)
+    image, _ = sample
+
+    # Print the shape of the image tensor
+    print(f"Sample {i}: Shape - {image.shape}")
+
+    # Check only the first few samples
+    if i >= 5:  # Check first 5 samples
+        break
+'''
 # determinstic behaviour
 def seed_worker(worker_id):
     set_deterministic()
@@ -113,5 +141,5 @@ for epoch in range(cfg["ENGINE"]["epoch"]):
         # this is for GPUs
         state_dict = model.module.state_dict()
         #state_dict = model.state_dict()
-        save_checkpoint(args.logdir, state_dict, name="pretrain500k12_18.pt")
+        save_checkpoint(args.logdir, state_dict, name="pretrain500k12_20.pt")
 print(f"From Rank: {rank}, ==> Training finished!")

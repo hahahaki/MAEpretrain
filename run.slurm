@@ -4,8 +4,8 @@
 #SBATCH --gpus-per-node=4
 #SBATCH --ntasks-per-node=4
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=127000M
-#SBATCH --time=24:00:00
+#SBATCH --mem=200000M
+#SBATCH --time=10:00:00
 
 #export NCCL_BLOCKING_WAIT=1  #Set this environment variable if you wish to use the NCCL backend for inter-GPU communication.
 #export MASTER_ADDR=$(hostname) #Store the master node’s IP address in the MASTER_ADDR environment variable.
@@ -29,6 +29,6 @@ echo "$SLURM_NODEID Launching python script"
 
 /home/codee/miniconda3/bin/python /home/codee/scratch/mycode/train.py --logdir $log_dir \
   --model_config_dir $model_config_dir \
-  --model_config_name $config_name > $log_dir/output12_18
+  --model_config_name $config_name > $log_dir/output12_22
 
 echo "Python script finished"
