@@ -69,7 +69,7 @@ if torch.cuda.is_available():
 
 model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[current_device])
 model.embed_dim = cfg["MODEL"]["embed_dim"]
-print(f"From Rank: {rank}, ==> Model ready!", flush=True)
+print(f"From Rank: {rank}, ==> Model ready!")
 print(f"From Rank: {rank}, ==> Preparing data..")
 
 
@@ -141,5 +141,8 @@ for epoch in range(cfg["ENGINE"]["epoch"]):
         # this is for GPUs
         state_dict = model.module.state_dict()
         #state_dict = model.state_dict()
-        save_checkpoint(args.logdir, state_dict, name="pretrain500k12_20.pt")
+        save_checkpoint(args.logdir, state_dict, name="pretrain500k1_8.pt")
+    
+    f = open("/home/codee/scratch/mycode/myfile.txt", "w")
+    f.write(str(epoch) + ' ')
 print(f"From Rank: {rank}, ==> Training finished!")

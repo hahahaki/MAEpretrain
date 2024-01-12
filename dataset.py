@@ -191,10 +191,9 @@ class Cem500K(torch.utils.data.dataset.Dataset):
     """
 
     def __init__(self, cfg):
+
         base_directory = '/home/codee/scratch/dataset/cem500k'
 
-        # Forming the list with file paths
-        # change the number for samples
         file_paths = [f"{base_directory}/{filename}" for filename in os.listdir(base_directory)]
 
         self.path_list = file_paths
@@ -203,71 +202,43 @@ class Cem500K(torch.utils.data.dataset.Dataset):
         # need to be modified if we would like readin all the images in the directory
         self.pad = cfg["pad"] 
         self.aug = get_plugin("transform", cfg["aug"])(cfg)
-        self.vol_size = (
-            cfg["vol_size"] + int(cfg["vol_size"] // cfg["patch_size"])
-            if cfg["patch_size"] % 2 == 0
-            else cfg["vol_size"]
-        ) 
-        self.data_list = []
-        '''
-        # ex. The key "data/folder1/tensor1_tensor.pkl" maps to "tensor1".
-        self.key_name_dict = {
-            x: x.split("/")[-1].split("_tensor")[0] for x in self.path_list
-        }
-        self.data_list = [
-            F.pad(torch.load(x)[self.key_name_dict[x]], [self.pad for _ in range(6)])
-            for x in self.path_list
-        ]
-        '''
+        self.vol_size = cfg["vol_size"]
         
+        '''
         # make changes of read in method:
         for x in self.path_list:
             # Load the image using PIL
             image = Image.open(x)
-            
-            '''
-            # Check if the image dimensions are within the size of patch
-            if image.size[0] < cfg["vol_size"]:
-                # Calculate padding
-                delta_width = cfg["vol_size"] - image.size[0] + 2
-                delta_height = 224 - image.size[1]
-                padding = (delta_width // 2, 0, delta_width - (delta_width // 2), 0)
-        
-                # Apply padding
-                image = ImageOps.expand(image, padding)  
-                
-            if image.size[1] < cfg["vol_size"] + 2:
-                # Calculate padding
-                delta_height = cfg["vol_size"] - image.size[1] + 2
-                padding = (0, delta_height // 2, 0, delta_height - (delta_height // 2))
-        
-                # Apply padding
-                image = ImageOps.expand(image, padding) 
-            '''
             #print("readimage size:", image.size)
             # Check if the image was successfully loaded
             if image is not None:
                 # Convert the image to a PyTorch tensor
-                #numpy_image = np.array(image)
-                #tensor = torch.tensor(numpy_image)
-                # Apply padding, range(4): up, down, left, right
-                #padded_tensor = F.pad(tensor, [self.pad for _ in range(4)])
-                # Add the padded tensor to your data list
-                # the dimension is [1, H, W]
-                #print(padded_tensor)
                 transform = tf.ToTensor()
                 tensor_image = transform(image)
                 self.data_list.append(tensor_image.squeeze(0))
             else:
                 print(f"Error loading image from path: {x}")
+        
+        
+        # Later, to recover the original size
+        data = torch.load('/home/codee/scratch/dataset/padded_images_and_sizes.pt')
+        stacked_images = data['stacked_images']
+        original_sizes = data['original_sizes']
 
+        for i, tensor in enumerate(stacked_images):
+            original_width, original_height = original_sizes[i]           
+            tensor_cropped = tensor[:, :original_height, :original_width]
+            self.data_list.append(tensor_cropped.squeeze(0))
+        '''
+
+        
     def __len__(self):
         """
         !!!! here is so important
         Returns the number of samples in each epoch.
         """
-        #return 500000
-        return 250000
+        #return 100000
+        return len(self.path_list)
 
     def __getitem__(self, idx):
         """
@@ -276,9 +247,44 @@ class Cem500K(torch.utils.data.dataset.Dataset):
         Returns:
             A tensor representing a randomly sampled 2D slice from the input data.
         """
-        curr_data_idx = random.randrange(0, len(self.data_list)) # select dataset
-        # return self.data_list[curr_data_idx].unsqueeze(0)
-        return self.sample_cord(curr_data_idx) # return 2D slice
+        img_path = self.path_list[idx]
+
+        # Load the image
+        image = Image.open(img_path)
+        if image is not None:
+            # Convert the image to a PyTorch tensor
+            transform = tf.ToTensor()
+            tensor_image = transform(image)
+        else:
+            print(f"Error loading image from path")
+            
+        _, d_x, d_y = tensor_image.shape
+        # cheng add:
+        # [224, 80]->[80, 80], 
+        # then bilinear resize to [224, 224]
+        sidelen = min(d_x, d_y)
+        if sidelen is d_x:
+            x_sample = 0
+            # randint: [left, right)
+            y_sample = torch.randint(
+                low=0, high=int(d_y - sidelen + 1), size=(1,)
+            )
+        if sidelen is d_y:
+            y_sample = 0
+            x_sample = torch.randint(
+                low=0, high=int(d_x - sidelen + 1), size=(1,)
+            )
+
+        sample = tensor_image[0][
+            x_sample : x_sample + sidelen - 1,
+            y_sample : y_sample + sidelen - 1,
+        ].unsqueeze(0)
+        #to_pil_image = tf.ToPILImage()
+        #sample = to_pil_image(sample)
+        # smaple now [x, y]
+        #return sample
+        #sample.savefig('/home/codee/scratch/result/check12.20.png')
+        return self.aug(sample)
 
 
     def sample_cord(self, data_idx):
@@ -300,13 +306,14 @@ class Cem500K(torch.utils.data.dataset.Dataset):
         sidelen = min(d_x, d_y)
         if sidelen is d_x:
             x_sample = 0
+            # randint: [left, right)
             y_sample = torch.randint(
-                low=0, high=int(d_y - sidelen), size=(1,)
+                low=0, high=int(d_y - sidelen + 1), size=(1,)
             )
         if sidelen is d_y:
             y_sample = 0
             x_sample = torch.randint(
-                low=0, high=int(d_x - sidelen), size=(1,)
+                low=0, high=int(d_x - sidelen + 1), size=(1,)
             )
 
         sample = data[0][

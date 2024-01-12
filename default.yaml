@@ -26,7 +26,7 @@ DATASET:
   aug: "betaaug2D"
   # depend on number of GPUs
   num_workers: 2
-  batch_size: 64 #32
+  batch_size: 128 #32
   vol_size: 224
   patch_size: 16 # 240 / 24 = 10 # 240 / 8 = 30
 ENGINE:
